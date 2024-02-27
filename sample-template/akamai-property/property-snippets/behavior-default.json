@@ -1,0 +1,89 @@
+[
+  {
+    "name": "origin",
+    "options": {
+      "cacheKeyHostname": "ORIGIN_HOSTNAME",
+      "compress": true,
+      "customValidCnValues": [
+        "{{Origin Hostname}}",
+        "{{Forward Host Header}}"
+      ],
+      "enableTrueClientIp": false,
+      "forwardHostHeader": "ORIGIN_HOSTNAME",
+      "hostname": "${env.origin_hostname}",
+      "httpPort": 80,
+      "httpsPort": 443,
+      "ipVersion": "IPV4",
+      "originCertificate": "",
+      "originCertsToHonor": "STANDARD_CERTIFICATE_AUTHORITIES",
+      "originSni": true,
+      "originType": "CUSTOMER",
+      "ports": "",
+      "standardCertificateAuthorities": [
+        "akamai-permissive",
+        "THIRD_PARTY_AMAZON"
+      ],
+      "verificationMode": "CUSTOM"
+    }
+  },
+  {
+    "name": "cpCode",
+    "options": {
+        "value": {
+            "id": "${env.cp_code}"
+        }
+    }
+  },
+  {
+    "name": "caching",
+    "options": {
+      "behavior": "MAX_AGE",
+      "mustRevalidate": false,
+      "ttl": "${env.default_ttl}"
+    }
+  },
+  {
+    "name": "allowPost",
+    "options": {
+      "enabled": false
+    }
+  },
+  {
+    "name": "report",
+    "options": {
+      "logAcceptLanguage": false,
+      "logCookies": "OFF",
+      "logCustomLogField": false,
+      "logEdgeIP": false,
+      "logHost": true,
+      "logReferer": true,
+      "logUserAgent": true,
+      "logXForwardedFor": false
+    }
+  },
+  {
+    "name": "originCharacteristics",
+    "options": {
+      "authenticationMethod": "AUTOMATIC",
+      "authenticationMethodTitle": "",
+      "country": "JAPAN",
+      "originLocationTitle": ""
+    }
+  },
+  {
+    "name": "clientCharacteristics",
+    "options": {
+      "country": "GLOBAL"
+    }
+  },
+  {
+    "name": "contentCharacteristicsDD",
+    "options": {
+      "catalogSize": "UNKNOWN",
+      "contentType": "UNKNOWN",
+      "objectSize": "UNKNOWN",
+      "optimizeOption": false,
+      "popularityDistribution": "UNKNOWN"
+    }
+  }
+]

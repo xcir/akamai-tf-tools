@@ -1,0 +1,12 @@
+{
+    "ruleFormat": "latest",
+    "rules": {
+        "name": "default",
+        "behaviors": "#include:behavior-default.json",
+        "children": [
+            "#include:rules/Compressible_objects.json"
+        ],
+        "options": {}
+    }
+
+} 

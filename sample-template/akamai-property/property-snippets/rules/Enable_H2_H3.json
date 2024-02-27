@@ -1,0 +1,21 @@
+{
+    "name": "Enable H2/H3",
+    "children": [],
+    "behaviors": [
+        {
+            "name": "http2",
+            "options": {
+                "enabled": ""
+            }
+        },
+        {
+            "name": "http3",
+            "options": {
+                "enable": true
+            }
+        }
+    ],
+    "criteria": [],
+    "criteriaMustSatisfy": "all",
+    "comments": "tpl:20231212-01"
+}
