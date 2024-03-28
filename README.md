@@ -6,8 +6,8 @@ Script to export akamai properties in bulk.
 | | |
 |--|:--|
 | Author:                   | Shohei Tanaka(@xcir) |
-| Date:                     | 2024/02/27 |
-| Version:                  | 1 |
+| Date:                     | - |
+| Version:                  | trunk |
 | Manual section:           | 7 |
 
 # Require
