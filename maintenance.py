@@ -15,6 +15,13 @@ import configparser
 import re
 
 config_ini_path = '/workdir/mount/config.ini'
+in_contract = None
+ex_contract = None
+in_group = None
+ex_group = None
+in_property = None
+ex_property = None
+exec_groupfilter=False
 if os.path.exists(config_ini_path):
     config_ini = configparser.ConfigParser()
     config_ini.read(config_ini_path, encoding='utf-8')
@@ -22,25 +29,20 @@ if os.path.exists(config_ini_path):
 
     if config_default.get('include_contract') is not None and config_default.get('include_contract') != '':
         in_contract = re.compile(config_default.get('include_contract'))
-    else:
-        in_contract = None
     if config_default.get('exclude_contract') is not None and config_default.get('exclude_contract') != '':
         ex_contract = re.compile(config_default.get('exclude_contract'))
-    else:
-        ex_contract = None
+
+    if config_default.get('include_group') is not None and config_default.get('include_group') != '':
+        in_group = re.compile(config_default.get('include_group'))
+        exec_groupfilter=True
+    if config_default.get('exclude_group') is not None and config_default.get('exclude_group') != '':
+        ex_group = re.compile(config_default.get('exclude_group'))
+        exec_groupfilter=True
+
     if config_default.get('include_property') is not None and config_default.get('include_property') != '':
         in_property = re.compile(config_default.get('include_property'))
-    else:
-        in_property = None
     if config_default.get('exclude_property') is not None and config_default.get('exclude_property') != '':
         ex_property = re.compile(config_default.get('exclude_property'))
-    else:
-        ex_property = None
-else:
-    in_contract = None
-    ex_contract = None
-    in_property = None
-    ex_property = None
 
 opts,args = getopt.getopt(sys.argv[1:],"xf")
 exec=False
@@ -116,13 +118,19 @@ remote={}
 # プロパティ関連のdiff
 for v in lgret:
     cid = v['contractIds'][0]
+    gid = v['groupId']
     if in_contract is not None and in_contract.match(cid) is None:
         #print('A:SKIP: %s' % v)
         continue
     if ex_contract is not None and ex_contract.match(cid) is not None:
         #print('B:SKIP: %s' % v)
         continue
-    gid = v['groupId']
+    if in_group is not None and in_group.match(gid) is None:
+        #print('E:SKIP: %s' % v)
+        continue
+    if ex_group is not None and ex_group.match(gid) is not None:
+        #print('F:SKIP: %s' % v)
+        continue
     lgret = json.loads(subprocess.check_output( ['akamai', 'pm', 'lpr', '-c', cid, '-g', gid, '-f' ,'json','-s', 'default'] ))
     for vv in lgret:
         if in_property is not None and in_property.match(vv['propertyName']) is None:
@@ -169,8 +177,10 @@ for v in need_update:
     else:
         print(v[0])
 print('\n### DELETED PROPERTY ( rm -rf props/[property] )')
+if(exec_groupfilter):
+    print('*** Disabled by group filter.')
 for v in need_delete:
-    if(exec):
+    if(exec and exec_groupfilter == False):
         os.system('rm -rf props/'+v)
         print('DELETE: %s' % v)
     else:
