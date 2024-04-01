@@ -37,11 +37,13 @@ if test $? -ne 0; then
   fi
 fi
 AK_CONTRACT=`grep '"ctr_' tmp_$AK_PROP/variables.tf |cut -d '"' -f2`
-mkdir -p props/$AK_CONTRACT
-mv tmp_$AK_PROP props/$AK_CONTRACT/$AK_PROP
+AK_GID=`grep '"grp' tmp_$AK_PROP/variables.tf |cut -d '"' -f2`
+mkdir -p props/$AK_CONTRACT/$AK_GID
+mv tmp_$AK_PROP props/$AK_CONTRACT/$AK_GID/$AK_PROP
 
 echo "---------------------------------------------"
 printf "%10s | %s\n" "ContractID" ${AK_CONTRACT}
+printf "%10s | %s\n" "GroupID" ${AK_GID}
 printf "%10s | %s\n" "Property" ${AK_PROP}
 echo "---------------------------------------------"
 

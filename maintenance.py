@@ -14,6 +14,7 @@ import sys
 import configparser
 import re
 
+
 config_ini_path = '/workdir/mount/config.ini'
 if os.path.exists(config_ini_path):
     config_ini = configparser.ConfigParser()
@@ -28,6 +29,14 @@ if os.path.exists(config_ini_path):
         ex_contract = re.compile(config_default.get('exclude_contract'))
     else:
         ex_contract = None
+    if config_default.get('include_gid') is not None and config_default.get('include_gid') != '':
+        in_gid = re.compile(config_default.get('include_gid'))
+    else:
+        in_gid = None
+    if config_default.get('exclude_gid') is not None and config_default.get('exclude_gid') != '':
+        ex_gid = re.compile(config_default.get('exclude_gid'))
+    else:
+        ex_gid = None
     if config_default.get('include_property') is not None and config_default.get('include_property') != '':
         in_property = re.compile(config_default.get('include_property'))
     else:
@@ -39,6 +48,8 @@ if os.path.exists(config_ini_path):
 else:
     in_contract = None
     ex_contract = None
+    in_gid = None
+    ex_gid = None
     in_property = None
     ex_property = None
 
@@ -76,11 +87,17 @@ if force:
         if ex_contract is not None and ex_contract.match(spl[4]) is not None:
             #print('B:SKIP: %s' % v)
             continue
-        if in_property is not None and in_property.match(spl[5]) is None:
+        if in_gid is not None and in_gid.match(spl[4]) is None:
             #print('C:SKIP: %s' % v)
             continue
-        if ex_property is not None and ex_property.match(spl[5]) is not None:
+        if ex_gid is not None and ex_gid.match(spl[4]) is not None:
             #print('D:SKIP: %s' % v)
+            continue
+        if in_property is not None and in_property.match(spl[6]) is None:
+            #print('E:SKIP: %s' % v)
+            continue
+        if ex_property is not None and ex_property.match(spl[6]) is not None:
+            #print('F:SKIP: %s' % v)
             continue
         if(exec):
             os.system('rm -rf '+v)
@@ -99,13 +116,19 @@ for v in lgret:
     if ex_contract is not None and ex_contract.match(spl[1]) is not None:
         #print('B:SKIP: %s' % v)
         continue
-    if in_property is not None and in_property.match(spl[2]) is None:
+    if in_gid is not None and in_gid.match(spl[3]) is None:
         #print('C:SKIP: %s' % v)
         continue
-    if ex_property is not None and ex_property.match(spl[2]) is not None:
+    if ex_gid is not None and ex_gid.match(spl[3]) is not None:
         #print('D:SKIP: %s' % v)
         continue
-    current[spl[1]+'/'+spl[2]] = int(v[2].strip(', \''))
+    if in_property is not None and in_property.match(spl[4]) is None:
+        #print('E:SKIP: %s' % v)
+        continue
+    if ex_property is not None and ex_property.match(spl[4]) is not None:
+        #print('F:SKIP: %s' % v)
+        continue
+    current[spl[1]+'/'+spl[2]+'/'+spl[3]] = int(v[2].strip(', \''))
     
 lgret = json.loads(subprocess.check_output( ['akamai', 'pm', 'lg', '-f' ,'json','-s', 'default'] ))
 none_exported   = [] #未エクスポート
@@ -131,6 +154,12 @@ for v in lgret:
         if ex_property is not None and ex_property.match(vv['propertyName']) is not None:
             #print('D:SKIP: %s' % vv)
             continue
+        if in_gid is not None and in_gid.match(vv['groupId']) is None:
+            #print('E:SKIP: %s' % vv)
+            continue
+        if ex_gid is not None and ex_gid.match(vv['groupId']) is not None:
+            #print('F:SKIP: %s' % vv)
+            continue
         ver = 0
         if vv['productionVersion'] is not None and ver < vv['productionVersion']:
             ver = vv['productionVersion']
@@ -139,7 +168,7 @@ for v in lgret:
         if ver == 0:
             ver = vv['latestVersion']
 
-        path=vv['contractId'] + '/' + vv['propertyName']
+        path=vv['contractId'] + '/' + vv['groupId'] +'/' + vv['propertyName']
         remote[path]=ver
 
         if path not in current:

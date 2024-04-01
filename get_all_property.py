@@ -21,6 +21,14 @@ if os.path.exists(config_ini_path):
         ex_contract = re.compile(config_default.get('exclude_contract'))
     else:
         ex_contract = None
+    if config_default.get('include_gid') is not None and config_default.get('include_gid') != '':
+        in_gid = re.compile(config_default.get('include_gid'))
+    else:
+        in_gid = None
+    if config_default.get('exclude_gid') is not None and config_default.get('exclude_gid') != '':
+        ex_gid = re.compile(config_default.get('exclude_gid'))
+    else:
+        ex_gid = None
     if config_default.get('include_property') is not None and config_default.get('include_property') != '':
         in_property = re.compile(config_default.get('include_property'))
     else:
@@ -32,6 +40,8 @@ if os.path.exists(config_ini_path):
 else:
     in_contract = None
     ex_contract = None
+    in_gid = None
+    ex_gid = None
     in_property = None
     ex_property = None
 
@@ -61,6 +71,13 @@ for v in lgret:
             continue
         if ex_property is not None and ex_property.match(pname) is not None:
             #print(">>>B:exclude property: %s"%(pname))
+            continue
+        gid = vv['groupId']
+        if in_gid is not None and in_gid.match(gid) is None:
+            #print(">>>E:exclude gid: %s"%(gid))
+            continue
+        if ex_gid is not None and ex_gid.match(gid) is not None:
+            #print(">>>F:exclude gid: %s"%(gid))
             continue
 
         print(">>>contract: %s group: %s property: %s version( stg: %s prod: %s latest: %s get: %s )"%(cid,gid,pname,vv['stagingVersion'],vv['productionVersion'],vv['latestVersion'],ver))
