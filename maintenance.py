@@ -112,7 +112,7 @@ for v in need_update:
     if(exec):
         os.system('rm -rf props/'+v[0])
         os.system(pwd + '/get_property.sh %s' % (v[0].split('/',2)[2]))
-        print('UPDATE: %s (Version: %d->%d)' % (v[0], v[1], v[2]))
+        print('UPDATE: %s (Version: %d->latest)' % (v[0], v[1]))
     else:
         print(v[0])
 print('\n### DELETED PROPERTY ( rm -rf props/[property] )')
