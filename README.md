@@ -29,13 +29,13 @@ run `akamai/shell`
 
 Can only be executed in `akamai/shell`.
 Exports the specified property.
-save path is props/`ctr_contractID`/`[property name]`/
+save path is props/`ctr_contractID`/`grp_groupID`/`[property name]`/
 
 ## get_all_property.py
 
 Can only be executed in `akamai/shell`.
 Exports all property.
-save path is props/`ctr_contractID`/`[property name]`/
+save path is props/`ctr_contractID`/`grp_groupID`/`[property name]`/
 
 ## maintenance.py -f -x
 
