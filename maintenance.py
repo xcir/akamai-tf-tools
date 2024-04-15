@@ -92,7 +92,7 @@ for v in lgret:
         remote[path]=ver
 
         if path not in current:
-            none_exported.append(path)
+            none_exported.append([path, ver])
         elif current[path] < ver:
             need_update.append([path, current[path], ver])
 
@@ -103,7 +103,7 @@ for k in current.keys():
 print('### NOT EXPORTED ( ./get_property.sh [property] )')
 for v in none_exported:
     if(exec):
-        os.system(pwd + '/get_property.sh %s' % (v.split('/',2)[2]))
+        os.system(pwd + '/get_property.sh %s %d' % (v[0].split('/',2)[2], v[1]))
         print('EXPORT: %s' % v)
     else:
         print(v)
