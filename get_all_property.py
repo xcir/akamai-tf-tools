@@ -18,13 +18,7 @@ for v in lgret:
         continue
     lgret = json.loads(subprocess.check_output( ['akamai', 'pm', 'lpr', '-c', cid, '-g', gid, '-f' ,'json','-s', 'default'] ))
     for vv in lgret:
-        ver = 0
-        if vv['productionVersion'] is not None and ver < vv['productionVersion']:
-            ver = vv['productionVersion']
-        if vv['stagingVersion'] is not None and ver < vv['stagingVersion']:
-            ver = vv['stagingVersion']
-        if ver == 0:
-            ver = vv['latestVersion']
+        ver = atf.selectPropertyVer(vv['latestVersion'], vv['stagingVersion'], vv['productionVersion'])
         pname = vv['propertyName']
         if atf.filterProps(props=pname)==False:
             continue

@@ -11,6 +11,7 @@ class AkamaiTf:
         self.ex_group = None
         self.in_property = None
         self.ex_property = None
+        self.get_property_ver = 'activate'
         if os.path.exists(AkamaiTf.config_ini_path):
             config_ini = configparser.ConfigParser()
             config_ini.read(AkamaiTf.config_ini_path, encoding='utf-8')
@@ -30,6 +31,8 @@ class AkamaiTf:
                 self.in_property = re.compile(config_default.get('include_property'))
             if config_default.get('exclude_property') is not None and config_default.get('exclude_property') != '':
                 self.ex_property = re.compile(config_default.get('exclude_property'))
+            if config_default.get('get_property_ver') is not None and config_default.get('get_property_ver') != '':
+                self.get_property_ver = config_default.get('get_property_ver')
     def filterProps(self, cid=None, gid=None, props=None):
         if cid is not None:
             if self.in_contract is not None and self.in_contract.match(cid) is None:
@@ -47,6 +50,37 @@ class AkamaiTf:
             if self.ex_property is not None and self.ex_property.match(props) is not None:
                 return False
         return True
+
+    def selectPropertyVer(self, latest, staging, production):
+        #print ("l:%s s:%s p:%s" %(latest, staging, production))
+        if latest is None:
+            latest = 0
+        if staging is None:
+            staging = 0
+        if production is None:
+            production = 0
+        ver = 0
+        if self.get_property_ver == 'latest':
+            # 最新のものを取得
+            ver = latest
+        elif self.get_property_ver == 'production':
+            # prod->stg->latestで取得
+            if production > ver:
+                ver = production
+            elif staging > ver:
+                ver = staging
+            else:
+                ver = latest
+        else:
+            # アクティベートされている最新のバージョンを取得
+            if staging > ver:
+                ver = staging
+            if production > ver:
+                ver = production
+            if ver == 0:
+                ver = latest
+        return ver
+
 
 
     

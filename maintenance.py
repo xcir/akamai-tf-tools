@@ -50,7 +50,7 @@ if force:
             os.system('rm -rf '+v)
             print('DELETE: %s' % v)
         else:
-            print(v)
+            print('rm -rf '+v)
         
 lgret = subprocess.check_output( [pwd + '/_scr/existPropVer.sh'] ).decode('ascii').splitlines()
 current={}
@@ -80,19 +80,13 @@ for v in lgret:
     for vv in lgret:
         if atf.filterProps(props=vv['propertyName'])==False:
             continue
-        ver = 0
-        if vv['productionVersion'] is not None and ver < vv['productionVersion']:
-            ver = vv['productionVersion']
-        if vv['stagingVersion'] is not None and ver < vv['stagingVersion']:
-            ver = vv['stagingVersion']
-        if ver == 0:
-            ver = vv['latestVersion']
+        ver = atf.selectPropertyVer(vv['latestVersion'], vv['stagingVersion'], vv['productionVersion'])
 
         path='%s/%s/%s' % (vv['contractId'], vv['groupId'], vv['propertyName'])
         remote[path]=ver
 
         if path not in current:
-            none_exported.append(path)
+            none_exported.append([path, ver])
         elif current[path] < ver:
             need_update.append([path, current[path], ver])
 
@@ -100,28 +94,29 @@ for k in current.keys():
     if k not in remote:
         need_delete.append(k)
 
-print('### NOT EXPORTED ( ./get_property.sh [property] )')
+print('### NOT EXPORTED ( ./get_property.sh [property] [ver])')
 for v in none_exported:
     if(exec):
-        os.system(pwd + '/get_property.sh %s' % (v.split('/',2)[2]))
-        print('EXPORT: %s' % v)
+        os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
+        print('EXPORT: %s %s' % (v[0], v[1]))
     else:
-        print(v)
+        print(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
 print('\n### NEEDS UPDATE ( rm -rf [property]; ./get_property.sh [property])')
 for v in need_update:
     if(exec):
         os.system('rm -rf props/'+v[0])
-        os.system(pwd + '/get_property.sh %s' % (v[0].split('/',2)[2]))
-        print('UPDATE: %s (Version: %d->latest)' % (v[0], v[1]))
+        os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
+        print('UPDATE: %s (Version: %d->%d)' % (v[0], v[1], v[2]))
     else:
-        print(v[0])
+        print('rm -rf props/'+v[0], end='; ')
+        print(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
 print('\n### DELETED PROPERTY ( rm -rf props/[property] )')
 for v in need_delete:
     if(exec):
         os.system('rm -rf props/'+v)
         print('DELETE: %s' % v)
     else:
-        print(v)
+        print('rm -rf props/'+v)
 
 
 print('\n\ndone.')
