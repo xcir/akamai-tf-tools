@@ -12,6 +12,7 @@ import glob
 import getopt
 import sys
 from _scr import AkamaiTf
+import time
 
 atf = AkamaiTf.AkamaiTf()
 
@@ -24,9 +25,8 @@ for opt in opts:
     if opt[0]=='-f':
         force=True
 
-
 # get existing prop ver
-pwd = os.path.dirname(os.path.abspath(__file__))
+pwd = atf.pwd
 
 
 if len(glob.glob(pwd + '/props/*')) == 0:
@@ -63,50 +63,68 @@ for v in lgret:
     current['/'.join(spl[1:4])] = int(v[2].strip(', \''))
 
 
-lgret = json.loads(subprocess.check_output( ['akamai', 'pm', 'lg', '-f' ,'json','-s', 'default'] ))
 none_exported   = [] #未エクスポート
 need_update     = [] #要アップデート
 need_delete     = [] #既にAkamaiにない（削除対象）
 remote={}
 
 # プロパティ関連のdiff
-for v in lgret:
-    cid = v['contractIds'][0]
+
+props = atf.list_properties()
+for v in props:
+    cid = v['contractId']
     gid = v['groupId']
-    if atf.filterProps(cid,gid)==False:
-        continue
+    pname=v['propertyName']
+    ver = atf.selectPropertyVer(v['latestVersion'], v['stagingVersion'], v['productionVersion'])
+    path='%s/%s/%s' % (cid, gid, pname)
+    remote[path]=ver
+    if path not in current:
+        none_exported.append([path, ver])
+    elif current[path] < ver:
+        need_update.append([path, current[path], ver])
 
-    lgret = json.loads(subprocess.check_output( ['akamai', 'pm', 'lpr', '-c', cid, '-g', gid, '-f' ,'json','-s', 'default'] ))
-    for vv in lgret:
-        if atf.filterProps(props=vv['propertyName'])==False:
-            continue
-        ver = atf.selectPropertyVer(vv['latestVersion'], vv['stagingVersion'], vv['productionVersion'])
-
-        path='%s/%s/%s' % (vv['contractId'], vv['groupId'], vv['propertyName'])
-        remote[path]=ver
-
-        if path not in current:
-            none_exported.append([path, ver])
-        elif current[path] < ver:
-            need_update.append([path, current[path], ver])
-
+#lgret = json.loads(subprocess.check_output( ['akamai', 'pm', 'lg', '-f' ,'json','-s', 'default'] ))
+#for v in lgret:
+#    cid = v['contractIds'][0]
+#    gid = v['groupId']
+#    if atf.filterProps(cid,gid)==False:
+#        continue
+#
+#    lgret = json.loads(subprocess.check_output( ['akamai', 'pm', 'lpr', '-c', cid, '-g', gid, '-f' ,'json','-s', 'default'] ))
+#    for vv in lgret:
+#        if atf.filterProps(props=vv['propertyName'])==False:
+#            continue
+#        ver = atf.selectPropertyVer(vv['latestVersion'], vv['stagingVersion'], vv['productionVersion'])
+#
+#        path='%s/%s/%s' % (vv['contractId'], vv['groupId'], vv['propertyName'])
+#        remote[path]=ver
+#
+#        if path not in current:
+#            none_exported.append([path, ver])
+#        elif current[path] < ver:
+#            need_update.append([path, current[path], ver])
+#
 for k in current.keys():
     if k not in remote:
         need_delete.append(k)
 
+proptasks=[]
+
 print('### NOT EXPORTED ( ./get_property.sh [property] [ver])')
 for v in none_exported:
     if(exec):
-        os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
-        print('EXPORT: %s %s' % (v[0], v[1]))
+        #os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
+        proptasks.append([v[0].split('/',2)[2], v[1]])
+        print('EXPORT(QUEUED): %s %s' % (v[0], v[1]))
     else:
         print(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
 print('\n### NEEDS UPDATE ( rm -rf [property]; ./get_property.sh [property])')
 for v in need_update:
     if(exec):
         os.system('rm -rf props/'+v[0])
-        os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
-        print('UPDATE: %s (Version: %d->%d)' % (v[0], v[1], v[2]))
+        proptasks.append([v[0].split('/',2)[2], v[2]])
+        #os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
+        print('UPDATE(QUEUED): %s (Version: %d->%d)' % (v[0], v[1], v[2]))
     else:
         print('rm -rf props/'+v[0], end='; ')
         print(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
@@ -118,5 +136,7 @@ for v in need_delete:
     else:
         print('rm -rf props/'+v)
 
+if len(proptasks) > 0:
+    atf.get_properties(proptasks)
 
 print('\n\ndone.')

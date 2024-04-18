@@ -24,7 +24,7 @@ mkdir ${SCRIPT_DIR}/tmp_${AK_PROP}
 
 akamai terraform --section default export-property --tfworkpath ${TMP_PROP_PATH} $AK_PROP_VER $AK_PROP
 if test $? -ne 0; then
-  sleep 5
+  sleep $(($RANDOM % 4 + 4))
   echo "### Retry"
   akamai terraform --section default export-property --tfworkpath ${TMP_PROP_PATH} $AK_PROP_VER $AK_PROP
   if test $? -ne 0; then
