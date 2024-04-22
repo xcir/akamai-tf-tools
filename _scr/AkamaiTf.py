@@ -118,18 +118,21 @@ class AkamaiTf:
     async def __list_properties(self):
         lgret = await self.call_akamai(['pm','lg'])
         tasks=[]
+        gmap={}
         for v in lgret:
             cid = v['contractIds'][0]
             gid = v['groupId']
             if self.filterProps(cid,gid)==False:
                 continue
             tasks.append(self.sem_call_akamai(['pm','lpr', '-c', cid, '-g', gid]))
+            gmap[gid]=v['groupName']
         res = await asyncio.gather(*tasks)
         ret=[]
         for props in res:
             for prop in props:
                 if self.filterProps(props=prop['propertyName'])==False:
                     continue
+                prop['groupName']=gmap[prop['groupId']]
                 ret.append(prop)
         return ret
 

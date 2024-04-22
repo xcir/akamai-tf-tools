@@ -47,6 +47,11 @@ Export, update, and delete properties.
 - -x
   - Execute the export, update, and delete.
 
+## list_propery.py
+
+Can only be executed in `akamai/shell`.
+Show a list of properties.
+
 # License
 
 Except for the sample-template/ folder, all other folders are BSD-2-Clause licensed.
