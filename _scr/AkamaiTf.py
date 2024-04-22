@@ -152,6 +152,7 @@ class AkamaiTf:
     async def sem_get_property(self, props, ver=None):
         async with self.prop_sem:
             await self.get_property(props, ver)
+
     async def __get_properties(self, opts):
         tasks=[]
         for v in opts:

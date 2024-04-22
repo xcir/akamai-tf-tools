@@ -25,13 +25,10 @@ for opt in opts:
     if opt[0]=='-f':
         force=True
 
-# get existing prop ver
-pwd = atf.pwd
 
-
-if len(glob.glob(pwd + '/props/*')) == 0:
+if len(glob.glob(atf.pwd + '/props/*')) == 0:
     print('### NO PROPS. Need to run ./get_all_property.py')
-    cmd=pwd + '/get_all_property.py'
+    cmd=atf.pwd + '/get_all_property.py'
     if(exec):
         os.system(cmd)
     else:
@@ -40,7 +37,7 @@ if len(glob.glob(pwd + '/props/*')) == 0:
 
 if force:
     print('### DELETE Terraform STATE (rm -rf [path])')
-    lgret = subprocess.check_output( [pwd + '/_scr/existTfstate.sh'] ).decode('ascii').splitlines()
+    lgret = subprocess.check_output( [atf.pwd + '/_scr/existTfstate.sh'] ).decode('ascii').splitlines()
     for v in lgret:
         spl = v.split('/')
         if atf.filterProps(spl[4],spl[5],spl[6])==False:
@@ -52,11 +49,11 @@ if force:
         else:
             print('rm -rf '+v)
         
-lgret = subprocess.check_output( [pwd + '/_scr/existPropVer.sh'] ).decode('ascii').splitlines()
+lgret = subprocess.check_output( [atf.pwd + '/_scr/existPropVer.sh'] ).decode('ascii').splitlines()
 current={}
 for v in lgret:
     v=v.strip().split(':',2)
-    spl=v[0].replace(pwd+'/','').split('/',4)
+    spl=v[0].replace(atf.pwd+'/','').split('/',4)
     if atf.filterProps(spl[1],spl[2],spl[3])==False:
         continue
 
@@ -113,21 +110,21 @@ proptasks=[]
 print('### NOT EXPORTED ( ./get_property.sh [property] [ver])')
 for v in none_exported:
     if(exec):
-        #os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
+        #os.system(atf.pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
         proptasks.append([v[0].split('/',2)[2], v[1]])
         print('EXPORT(QUEUED): %s %s' % (v[0], v[1]))
     else:
-        print(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
+        print(atf.pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[1]))
 print('\n### NEEDS UPDATE ( rm -rf [property]; ./get_property.sh [property])')
 for v in need_update:
     if(exec):
         os.system('rm -rf props/'+v[0])
         proptasks.append([v[0].split('/',2)[2], v[2]])
-        #os.system(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
+        #os.system(atf.pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
         print('UPDATE(QUEUED): %s (Version: %d->%d)' % (v[0], v[1], v[2]))
     else:
         print('rm -rf props/'+v[0], end='; ')
-        print(pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
+        print(atf.pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
 print('\n### DELETED PROPERTY ( rm -rf props/[property] )')
 for v in need_delete:
     if(exec):
