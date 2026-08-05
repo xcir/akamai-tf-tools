@@ -1,26 +1,20 @@
 #!/usr/bin/env python3
 
-import json
 import pprint
-import subprocess
 import os
-import time
 from _scr import AkamaiTf
 
 atf = AkamaiTf.AkamaiTf()
-props = atf.list_properties()
+props = atf.list_properties_with_version()
 
 task=[]
 for v in props:
-    cid = v['contractId']
-    gid = v['groupId']
-    pname=v['propertyName']
-    ver = atf.selectPropertyVer(v['latestVersion'], v['stagingVersion'], v['productionVersion'])
+    cid, gid, pname, ver = v['cid'], v['gid'], v['pname'], v['ver']
     print(">>>contract: %s group: %s property: %s version( stg: %s prod: %s latest: %s get: %s )"%(cid,gid,pname,v['stagingVersion'],v['productionVersion'],v['latestVersion'],ver))
-    if os.path.isdir('/workdir/mount/props/%s/%s/%s' %(cid,gid,pname)) is False:
+    if os.path.isdir('%s/props/%s/%s/%s' % (atf.pwd,cid,gid,pname)) is False:
         print(">>>queued")
         task.append([pname,ver])
-        #subprocess.call(['/workdir/mount/get_property.sh', pname, str(ver)])
+        #subprocess.call([atf.pwd + '/get_property.sh', pname, str(ver)])
     else:
         print(">>>skip(exsits)")
 if len(task) > 0:

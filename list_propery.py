@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 
-import json
 import pprint
 import subprocess
-import os
 import glob
-import getopt
-import sys
 from _scr import AkamaiTf
-import time
 
 atf = AkamaiTf.AkamaiTf()
 

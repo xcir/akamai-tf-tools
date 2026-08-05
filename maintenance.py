@@ -4,7 +4,6 @@
 # プロパティとかのメンテ
 #
 
-import json
 import pprint
 import subprocess
 import os
@@ -13,7 +12,6 @@ import glob
 import getopt
 import sys
 from _scr import AkamaiTf
-import time
 
 atf = AkamaiTf.AkamaiTf()
 
@@ -45,8 +43,8 @@ if force:
     print('### DELETE Terraform STATE (rm -rf [path])')
     lgret = subprocess.check_output( [atf.pwd + '/_scr/existTfstate.sh'] ).decode('ascii').splitlines()
     for v in lgret:
-        spl = v.split('/')
-        if atf.filterProps(spl[4],spl[5],spl[6])==False:
+        spl = v.replace(atf.pwd+'/','').split('/',4)
+        if atf.filterProps(spl[1],spl[2],spl[3])==False:
             continue
 
         if(exec):
@@ -73,13 +71,10 @@ remote={}
 
 # プロパティ関連のdiff
 
-props = atf.list_properties()
+props = atf.list_properties_with_version()
 for v in props:
-    cid = v['contractId']
-    gid = v['groupId']
-    pname=v['propertyName']
-    ver = atf.selectPropertyVer(v['latestVersion'], v['stagingVersion'], v['productionVersion'])
-    path='%s/%s/%s' % (cid, gid, pname)
+    path = v['path']
+    ver = v['ver']
     remote[path]=ver
     if path not in current:
         none_exported.append([path, ver])

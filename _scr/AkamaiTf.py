@@ -1,9 +1,7 @@
 import configparser
 import re
 import os
-import subprocess
 import json
-import time
 import pprint
 import asyncio
 
@@ -143,8 +141,24 @@ class AkamaiTf:
 
     def list_properties(self):
         self.ak_sem = asyncio.Semaphore(self.api_concurrency)
-        loop = asyncio.get_event_loop()
-        ret = loop.run_until_complete(self.__list_properties())
+        return asyncio.run(self.__list_properties())
+
+    def list_properties_with_version(self):
+        # list_properties()にcid/gid/pname/ver/pathを正規化して付与する
+        ret = []
+        for v in self.list_properties():
+            cid = v['contractId']
+            gid = v['groupId']
+            pname = v['propertyName']
+            ver = self.selectPropertyVer(v['latestVersion'], v['stagingVersion'], v['productionVersion'])
+            ret.append({
+                **v,
+                'cid': cid,
+                'gid': gid,
+                'pname': pname,
+                'ver': ver,
+                'path': '%s/%s/%s' % (cid, gid, pname),
+            })
         return ret
 
     async def get_property(self, props, ver=None):
@@ -173,5 +187,4 @@ class AkamaiTf:
 
     def get_properties(self, opts:list):
         self.prop_sem = asyncio.Semaphore(self.prop_concurrency)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.__get_properties(opts))
+        asyncio.run(self.__get_properties(opts))
