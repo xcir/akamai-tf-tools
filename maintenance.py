@@ -8,6 +8,7 @@ import json
 import pprint
 import subprocess
 import os
+import shutil
 import glob
 import getopt
 import sys
@@ -15,6 +16,11 @@ from _scr import AkamaiTf
 import time
 
 atf = AkamaiTf.AkamaiTf()
+
+def rm_rf(path):
+    # os.systemへの文字列結合(シェル経由)を避け、プロパティ名由来のパスを直接渡す
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
 opts,args = getopt.getopt(sys.argv[1:],"xf")
 exec=False
@@ -44,7 +50,7 @@ if force:
             continue
 
         if(exec):
-            os.system('rm -rf '+v)
+            rm_rf(v)
             print('DELETE: %s' % v)
         else:
             print('rm -rf '+v)
@@ -118,7 +124,7 @@ for v in none_exported:
 print('\n### NEEDS UPDATE ( rm -rf [property]; ./get_property.sh [property])')
 for v in need_update:
     if(exec):
-        os.system('rm -rf props/'+v[0])
+        rm_rf('props/'+v[0])
         proptasks.append([v[0].split('/',2)[2], v[2]])
         #os.system(atf.pwd + '/get_property.sh %s %s' % (v[0].split('/',2)[2], v[2]))
         print('UPDATE(QUEUED): %s (Version: %d->%d)' % (v[0], v[1], v[2]))
@@ -128,7 +134,7 @@ for v in need_update:
 print('\n### DELETED PROPERTY ( rm -rf props/[property] )')
 for v in need_delete:
     if(exec):
-        os.system('rm -rf props/'+v)
+        rm_rf('props/'+v)
         print('DELETE: %s' % v)
     else:
         print('rm -rf props/'+v)
