@@ -97,14 +97,19 @@ class AkamaiTf:
 
     async def call_akamai(self, opts:list, retry=3):
         #print(time.time())
+        cmd = [*['akamai'], *opts, *['-f' ,'json','-s', 'default']]
         for i in range(0, retry):
             try:
                 p= await asyncio.create_subprocess_exec(
-                    *[*['akamai'], *opts, *['-f' ,'json','-s', 'default']]
+                    *cmd
                     , stdout=asyncio.subprocess.PIPE
                 )
                 j=await p.communicate()
-                
+
+                if p.returncode != 0:
+                    raise RuntimeError(
+                        'akamai command failed (exit %d): %s' % (p.returncode, ' '.join(cmd)))
+
                 return json.loads(j[0])
             except Exception as e:
                 if i == retry - 1:
